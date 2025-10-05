@@ -1,5 +1,6 @@
-import express from "express"
-
-const app = express()
-
-app.listen(5001,()=>console.log("Server is running"))
+import express from "express";
+import { ENV } from "./config/env.js";
+import { connectDB } from "./config/db.js";
+const app = express();
+connectDB()
+app.listen(ENV.PORT, () => console.log(`Server is running on ${ENV.PORT}`));
