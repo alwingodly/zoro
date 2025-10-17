@@ -26,6 +26,10 @@ app.use((err ,req , res , next)=>{
   res.status(500).json({message: "Internal server error"})
 })
 
+app.get('/', (req, res) => {
+  res.send('Backend is running ✅');
+});
+
 const startServer = async () => {
   try {
     await connectDB();
