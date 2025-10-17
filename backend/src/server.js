@@ -42,3 +42,5 @@ const startServer = async () => {
 };
 
 startServer();
+// for vercel deployment
+export default app;
