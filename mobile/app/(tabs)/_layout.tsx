@@ -6,10 +6,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@clerk/clerk-expo';
 const TabsLayout = () => {
     const insets = useSafeAreaInsets();
-    const {isSignedIn} = useAuth();
-    if(!isSignedIn){
-        return <Redirect href={'/(auth)'} />
-    }
+     const { isSignedIn } = useAuth();
+
+  if (!isSignedIn) return <Redirect href="/(auth)" />;
     return (
         <Tabs screenOptions={{ tabBarActiveTintColor: '#3BAF56', tabBarInactiveTintColor: 'gray', tabBarStyle: { height: 50 + insets.bottom, paddingBottom: 5, paddingTop: 5 } }}>
             <Tabs.Screen name="index" options={{ title:"Home", headerShown: false, tabBarIcon: ({ color, size }) => <Feather name='home' size={size} color={color} /> }} />
