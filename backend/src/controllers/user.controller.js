@@ -25,6 +25,8 @@ export const updateProfile = asyncHandler(async (req, res) => {
 
 export const syncUser = asyncHandler(async (req, res) => {
   const { userId } = getAuth(req);
+  console.log("hello" , userId);
+  
   const existingUser = await User.findOne({ clerkId: userId });
   if (existingUser) {
     return res

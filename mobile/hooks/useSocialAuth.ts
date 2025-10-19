@@ -13,23 +13,40 @@ export const useSocialAuth = () => {
     
     try {
       const oAuth = strategy === "oauth_google" ? googleOAuth : appleOAuth;
-      
-      // Create redirect URL to our callback route
       const redirectUrl = Linking.createURL("/oauth-native-callback");
       
       console.log("Starting OAuth with redirect:", redirectUrl);
 
-      const { createdSessionId, setActive } = await oAuth.startOAuthFlow({
+      const { createdSessionId, setActive, signIn, signUp } = await oAuth.startOAuthFlow({
         redirectUrl,
       });
 
-      if (createdSessionId && setActive) {
-        await setActive({ session: createdSessionId });
+      // Check if we got a session
+      if (createdSessionId) {
+        console.log("✅ Session created:", createdSessionId);
+        
+        if (setActive) {
+          await setActive({ session: createdSessionId });
+          console.log("✅ Session activated");
+        }
+      } else {
+        console.log("⚠️ No session created");
+        
+        // Handle sign-in or sign-up flow
+        if (signIn?.createdSessionId) {
+          await setActive?.({ session: signIn.createdSessionId });
+        } else if (signUp?.createdSessionId) {
+          await setActive?.({ session: signUp.createdSessionId });
+        }
       }
       
-      // Don't manually navigate - let the callback route handle it
     } catch (err: any) {
-      console.log("OAuth Error:", err);
+      console.error("OAuth Error:", err);
+      console.error("Error details:", {
+        code: err.code,
+        message: err.message,
+        status: err.status,
+      });
 
       // Handle user cancellation
       if (
@@ -38,6 +55,15 @@ export const useSocialAuth = () => {
         err.message?.toLowerCase().includes("cancel")
       ) {
         console.log("User cancelled OAuth");
+        return;
+      }
+
+      // Handle 401 errors specifically
+      if (err.status === 401 || err.message?.includes("401")) {
+        Alert.alert(
+          "Authentication Failed",
+          "Unable to authenticate. Please try again or check your internet connection."
+        );
         return;
       }
 
