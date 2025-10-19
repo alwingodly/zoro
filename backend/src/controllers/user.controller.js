@@ -25,23 +25,27 @@ export const updateProfile = asyncHandler(async (req, res) => {
 
 export const syncUser = asyncHandler(async (req, res) => {
   const { userId } = getAuth(req);
-  console.log("hello" , userId);
+  console.log("Syncing user:", userId);
   
   const existingUser = await User.findOne({ clerkId: userId });
   if (existingUser) {
     return res
       .status(200)
-      .json({ user: existingUser, message: "User already exist" });
+      .json({ user: existingUser, message: "User already exists" });
   }
+  
   const clerkUser = await clerkClient.users.getUser(userId);
+  
   const userData = {
     clerkId: userId,
-    username: clerkUser.emailAddresses[0].emailAddress.split("@")[0],
+    userName: clerkUser.emailAddresses[0].emailAddress.split("@")[0], // Changed to userName
     firstName: clerkUser.firstName || "",
     lastName: clerkUser.lastName || "",
     email: clerkUser.emailAddresses[0].emailAddress,
     imageUrl: clerkUser.imageUrl || "",
+    // password is NOT included since we're using Clerk
   };
+  
   const user = await User.create(userData);
   res.status(201).json({ user, message: "User created successfully" });
 });
