@@ -10,30 +10,33 @@ export const createApiClient = (getToken: () => Promise<string | null>): AxiosIn
   });
 
   // Request interceptor
-  api.interceptors.request.use(
-    async (config) => {
-      try {
-        const token = await getToken();
-        
-        if (!token) {
-          console.warn("No token available for request");
-          throw new Error("Authentication token not available");
-        }
-
-        config.headers.Authorization = `Bearer ${token}`;
-        console.log("Request with token:", config.url);
-        
-        return config;
-      } catch (error) {
-        console.error("Error getting token:", error);
-        return Promise.reject(error);
+ api.interceptors.request.use(
+  async (config) => {
+    try {
+      const token = await getToken();
+      
+      if (!token) {
+        console.warn("No token available for request");
+        throw new Error("Authentication token not available");
       }
-    },
-    (error) => {
-      console.error("Request interceptor error:", error);
+
+      // Log token details (first/last few characters only for security)
+      console.log("Token available:", token.substring(0, 10) + "...");
+      
+      config.headers.Authorization = `Bearer ${token}`;
+      console.log("Request with token:", config.url);
+      
+      return config;
+    } catch (error) {
+      console.error("Error getting token:", error);
       return Promise.reject(error);
     }
-  );
+  },
+  (error) => {
+    console.error("Request interceptor error:", error);
+    return Promise.reject(error);
+  }
+);
 
   // Response interceptor for better error handling
   api.interceptors.response.use(
