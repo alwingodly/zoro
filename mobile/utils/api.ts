@@ -1,62 +1,21 @@
+import axios, { AxiosInstance } from "axios";
 import { useAuth } from "@clerk/clerk-expo";
-import axios, { AxiosInstance, AxiosError } from "axios";
 
-const API_BASE_URL = "https://zoro-ashy.vercel.app/api";
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "https://zoro-ashy.vercel.app/api";
+// ! 🔥 localhost api would not work on your actual physical device
+// const API_BASE_URL = "http://localhost:5001/api";
 
+// this will basically create an authenticated api, pass the token into our headers
 export const createApiClient = (getToken: () => Promise<string | null>): AxiosInstance => {
-  const api = axios.create({ 
-    baseURL: API_BASE_URL,
-    timeout: 10000, // 10 second timeout
-  });
+  const api = axios.create({ baseURL: API_BASE_URL });
 
-  // Request interceptor
- api.interceptors.request.use(
-  async (config) => {
-    try {
-      const token = await getToken();
-      
-      if (!token) {
-        console.warn("No token available for request");
-        throw new Error("Authentication token not available");
-      }
-
-      // Log token details (first/last few characters only for security)
-      console.log("Token available:", token.substring(0, 10) + "...");
-      
+  api.interceptors.request.use(async (config) => {
+    const token = await getToken();
+    if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log("Request with token:", config.url);
-      
-      return config;
-    } catch (error) {
-      console.error("Error getting token:", error);
-      return Promise.reject(error);
     }
-  },
-  (error) => {
-    console.error("Request interceptor error:", error);
-    return Promise.reject(error);
-  }
-);
-
-  // Response interceptor for better error handling
-  api.interceptors.response.use(
-    (response) => response,
-    async (error: AxiosError) => {
-      if (error.response?.status === 401) {
-        console.error("Unauthorized request - token may be invalid or expired");
-        // You could trigger a sign-out or token refresh here
-      }
-      
-      console.error("API Error:", {
-        url: error.config?.url,
-        status: error.response?.status,
-        data: error.response?.data,
-        message: error.message,
-      });
-      
-      return Promise.reject(error);
-    }
-  );
+    return config;
+  });
 
   return api;
 };
